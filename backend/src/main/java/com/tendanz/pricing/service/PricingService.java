@@ -56,8 +56,54 @@ public class PricingService {
      */
     @Transactional
     public QuoteResponse calculateQuote(QuoteRequest request) {
-        // TODO: Implement this method
-        throw new UnsupportedOperationException("TODO: Implement calculateQuote");
+        
+        // 1. Validate and load the Product
+        Product product = productRepository.findById(request.getProductId())
+                .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + request.getProductId()));
+        
+        // 2. Validate and load the Zone
+        Zone zone = zoneRepository.findByCode(request.getZoneCode())
+                .orElseThrow(() -> new IllegalArgumentException("Zone not found with code: " + request.getZoneCode()));
+        
+        // 3. Load the PricingRule for the product
+        PricingRule pricingRule = pricingRuleRepository.findByProductId(product.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Pricing rule not found for product ID: " + product.getId()));
+        
+        // 4. Determine age category
+        AgeCategory ageCategory = AgeCategory.fromAge(request.getClientAge());
+        
+        // 5. Get the appropriate age factor using getAgeFactor() helper
+        BigDecimal ageFactor = getAgeFactor(pricingRule, ageCategory);
+        
+        // 6. Calculate base rate and final price
+        BigDecimal baseRate = pricingRule.getBaseRate();
+        BigDecimal zoneRiskCoefficient = zone.getRiskCoefficient();
+        BigDecimal finalPrice = baseRate.multiply(ageFactor).multiply(zoneRiskCoefficient).setScale(2, RoundingMode.HALF_UP);
+        
+        // 7. Build appliedRules list and convert to JSON
+        List<String> rulesList = new ArrayList<>();
+        rulesList.add(String.format("Base Rate (%s): %.2f TND", product.getName(), baseRate));
+        rulesList.add(String.format("Age Multiplier (%s): x%.2f", ageCategory.name(), ageFactor));
+        rulesList.add(String.format("Zone Risk (%s): x%.2f", zone.getName(), zoneRiskCoefficient));
+        
+        String appliedRulesJson = convertRulesToJson(rulesList);
+        
+        // 8. Create Quote entity
+        Quote quote = Quote.builder()
+                .product(product)
+                .zone(zone)
+                .clientName(request.getClientName())
+                .clientAge(request.getClientAge())
+                .basePrice(baseRate)
+                .finalPrice(finalPrice)
+                .appliedRules(appliedRulesJson)
+                .build();
+                
+        // Save quote
+        Quote savedQuote = quoteRepository.save(quote);
+        
+        // 9. Return QuoteResponse using mapToResponse() helper
+        return mapToResponse(savedQuote, rulesList);
     }
 
     /**

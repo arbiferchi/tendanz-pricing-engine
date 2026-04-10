@@ -4,6 +4,7 @@ import com.tendanz.pricing.dto.QuoteRequest;
 import com.tendanz.pricing.dto.QuoteResponse;
 import com.tendanz.pricing.service.PricingService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -45,17 +46,41 @@ public class QuoteController {
     }
 
     /**
-     * Get a quote by ID.
-     * This endpoint is provided as a reference implementation.
+     * Retrieve a quote by its unique identifier.
+     * 
+     * This endpoint fetches an existing quote from the system using its ID.
+     * The retrieved quote includes all pricing details, applied rules, and timestamps.
      *
-     * @param id the quote ID
-     * @return the quote response
+     * @param id the unique identifier of the quote to retrieve (must be positive)
+     * @return ResponseEntity containing the QuoteResponse with HTTP 200 OK status on success
+     * 
+     * @throws IllegalArgumentException (caught by GlobalExceptionHandler)
+     *         Returns HTTP 404 NOT_FOUND if the quote with the given ID does not exist
+     *
+     * @apiNote 
+     * - ID must be a positive integer greater than 0
+     * - The quote must exist in the database; non-existent IDs result in 404 errors
+     * - All nested entities (Product, Zone, Rules) are included in the response
+     * 
+     * @example
+     * GET /api/quotes/1 -> Returns quote with ID 1
+     * GET /api/quotes/999 -> Returns 404 if quote 999 doesn't exist
      */
     @GetMapping("/{id}")
-    public ResponseEntity<QuoteResponse> getQuote(@PathVariable Long id) {
-        log.info("Fetching quote with ID: {}", id);
-        QuoteResponse response = pricingService.getQuote(id);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<QuoteResponse> getQuote(
+            @PathVariable 
+            @Positive(message = "Quote ID must be a positive integer") 
+            Long id) {
+        log.info("Received request to fetch quote with ID: {}", id);
+        
+        try {
+            QuoteResponse response = pricingService.getQuote(id);
+            log.info("Successfully retrieved quote with ID: {}", id);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            log.warn("Quote not found for ID: {}. Error: {}", id, e.getMessage());
+            throw e;
+        }
     }
 
     /**

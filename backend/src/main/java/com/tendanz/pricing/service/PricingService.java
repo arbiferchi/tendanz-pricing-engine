@@ -108,13 +108,21 @@ public class PricingService {
 
     /**
      * Get the age factor for a specific age category from a pricing rule.
-     * This helper is provided — use it in your calculateQuote implementation.
+     * Computes the multiplier based on the client's current age.
      *
      * @param pricingRule the pricing rule containing age factors
-     * @param ageCategory the age category (YOUNG, ADULT, SENIOR, ELDERLY)
-     * @return the appropriate age factor as BigDecimal
+     * @param ageCategory the evaluated age category (YOUNG, ADULT, SENIOR, ELDERLY)
+     * @return the appropriate age factor as a BigDecimal
+     * @throws IllegalArgumentException if pricingRule or ageCategory is null
      */
     private BigDecimal getAgeFactor(PricingRule pricingRule, AgeCategory ageCategory) {
+        if (pricingRule == null) {
+            throw new IllegalArgumentException("PricingRule cannot be null to compute age factor");
+        }
+        if (ageCategory == null) {
+            throw new IllegalArgumentException("AgeCategory cannot be null to compute age factor");
+        }
+
         return switch (ageCategory) {
             case YOUNG -> pricingRule.getAgeFactorYoung();
             case ADULT -> pricingRule.getAgeFactorAdult();

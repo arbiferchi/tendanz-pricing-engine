@@ -11,18 +11,33 @@ import java.util.List;
 /**
  * Repository for Quote entity.
  * Provides database operations for quotes.
- *
- * TODO: Add custom query methods:
- * - findByClientName(String clientName)
- * - findByProductId(Long productId)
- * - A custom @Query to find quotes with finalPrice above a given threshold
- *
- * Hint: Spring Data JPA can derive queries from method names.
- * For more complex queries, use @Query with JPQL.
  */
 @Repository
 public interface QuoteRepository extends JpaRepository<Quote, Long> {
 
-    // TODO: Add custom query methods here
+    /**
+     * Retrieves all quotes associated with a specific client name.
+     *
+     * @param clientName The name of the client to search for.
+     * @return A list of quotes matching the given client name.
+     */
+    List<Quote> findByClientName(String clientName);
+    
+    /**
+     * Retrieves all quotes associated with a specific product ID.
+     *
+     * @param productId The ID of the product.
+     * @return A list of quotes for the specified product.
+     */
+    List<Quote> findByProductId(Long productId);
+
+    /**
+     * Retrieves all quotes where the final price is strictly greater than the predefined threshold.
+     *
+     * @param threshold The minimum final price (exclusive).
+     * @return A list of quotes exceeding the specified threshold.
+     */
+    @Query("SELECT q FROM Quote q WHERE q.finalPrice > :threshold")
+    List<Quote> findQuotesAboveThreshold(@Param("threshold") BigDecimal threshold);
 
 }

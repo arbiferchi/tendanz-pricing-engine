@@ -32,13 +32,13 @@ public interface QuoteRepository extends JpaRepository<Quote, Long> {
     List<Quote> findByProductId(Long productId);
 
     /**
-     * Retrieves all quotes where the final price is strictly greater than the predefined threshold.
+     * Retrieves all quotes where the final price is greater than or equal to the predefined threshold.
      *
-     * @param threshold The minimum final price (exclusive).
-     * @return A list of quotes exceeding the specified threshold.
+     * @param minPrice The minimum final price (inclusive).
+     * @return A list of quotes matching the condition, ordered by price descending.
      */
-    @Query("SELECT q FROM Quote q WHERE q.finalPrice > :threshold")
-    List<Quote> findQuotesAboveThreshold(@Param("threshold") BigDecimal threshold);
+    @Query("SELECT q FROM Quote q WHERE q.finalPrice >= :minPrice ORDER BY q.finalPrice DESC")
+    List<Quote> findQuotesAboveThreshold(@Param("minPrice") BigDecimal minPrice);
 
     /**
      * Retrieves all quotes where the final price is greater than or equal to the predefined threshold.

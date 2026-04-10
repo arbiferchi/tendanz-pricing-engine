@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -33,55 +34,104 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     /**
-     * TODO: Handle validation errors from @Valid request body validation.
+     * Handle validation errors from @Valid request body validation.
      *
-     * Requirements:
-     * - Extract field-level errors from MethodArgumentNotValidException
-     * - Return HTTP 400 BAD_REQUEST
-     * - Include a map of field name -> error message in the response
-     *
-     * @param ex the validation exception
-     * @return error response with field errors
+     * @param ex the validation exception containing field-level errors
+     * @return error response with structured field validation messages
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationExceptions(
             MethodArgumentNotValidException ex) {
-        // TODO: Implement validation error handling
-        throw new UnsupportedOperationException("TODO: Implement handleValidationExceptions");
+        log.warn("Validation failed for input request: {}", ex.getMessage());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.BAD_REQUEST.value());
+        response.put("error", "Validation Failed");
+
+        Map<String, String> fieldErrors = new HashMap<>();
+        for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
+            fieldErrors.put(fieldError.getField(), fieldError.getDefaultMessage());
+        }
+        response.put("errors", fieldErrors);
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     /**
-     * TODO: Handle IllegalArgumentException (e.g., product/zone not found).
+     * Handle ResourceNotFoundException (e.g., product/zone not found).
      *
-     * Requirements:
-     * - Log the error
-     * - Return HTTP 404 NOT_FOUND
-     * - Include the exception message in the response
+     * @param ex the resource not found exception
+     * @return error response standardizing business logic failures to HTTP 404
+     */
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleResourceNotFoundException(ResourceNotFoundException ex) {
+        log.warn("Resource not found: {}", ex.getMessage());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.NOT_FOUND.value());
+        response.put("error", "Resource Not Found");
+        response.put("message", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    /**
+     * Handle IllegalArgumentException.
      *
      * @param ex the illegal argument exception
-     * @return error response
+     * @return error response standardizing bad requests to HTTP 400
      */
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(
             IllegalArgumentException ex) {
-        // TODO: Implement not-found error handling
-        throw new UnsupportedOperationException("TODO: Implement handleIllegalArgumentException");
+        log.warn("Resource not found or illegal argument provided: {}", ex.getMessage());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.BAD_REQUEST.value());
+        response.put("error", "Bad Request");
+        response.put("message", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     /**
-     * TODO: Handle all other unexpected exceptions as a fallback.
+     * Handle NoResourceFoundException (e.g., calling an invalid endpoint/URL).
      *
-     * Requirements:
-     * - Log the full exception
-     * - Return HTTP 500 INTERNAL_SERVER_ERROR
-     * - Return a generic error message (do NOT expose internal details)
+     * @param ex the no resource found exception
+     * @return error response standardizing business logic failures to HTTP 404
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNoResourceFoundException(NoResourceFoundException ex) {
+        log.warn("Endpoint not found: {}", ex.getMessage());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.NOT_FOUND.value());
+        response.put("error", "Not Found");
+        response.put("message", "The requested endpoint does not exist.");
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    /**
+     * Handle all other unexpected exceptions as a fallback.
      *
-     * @param ex the exception
-     * @return error response
+     * @param ex the unhandled exception
+     * @return error response masking internal logic via HTTP 500
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneralException(Exception ex) {
-        // TODO: Implement generic error handling
-        throw new UnsupportedOperationException("TODO: Implement handleGeneralException");
+        log.error("An unexpected server error occurred: ", ex);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        response.put("error", "Internal Server Error");
+        response.put("message", "An unexpected error occurred. Please try again later.");
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }

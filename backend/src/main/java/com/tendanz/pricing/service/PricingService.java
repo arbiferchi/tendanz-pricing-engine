@@ -11,6 +11,7 @@ import com.tendanz.pricing.repository.PricingRuleRepository;
 import com.tendanz.pricing.repository.ProductRepository;
 import com.tendanz.pricing.repository.QuoteRepository;
 import com.tendanz.pricing.repository.ZoneRepository;
+import com.tendanz.pricing.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 
 /**
@@ -61,15 +63,24 @@ public class PricingService {
         
         // 1. Validate and load the Product
         Product product = productRepository.findById(request.getProductId())
-                .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + request.getProductId()));
+                .orElseThrow(() -> {
+                    log.error("Product not found with ID: {}", request.getProductId());
+                    return new ResourceNotFoundException("Product", "id", request.getProductId());
+                });
         
         // 2. Validate and load the Zone
         Zone zone = zoneRepository.findByCode(request.getZoneCode())
-                .orElseThrow(() -> new IllegalArgumentException("Zone not found with code: " + request.getZoneCode()));
+                .orElseThrow(() -> {
+                    log.error("Zone not found with code: {}", request.getZoneCode());
+                    return new ResourceNotFoundException("Zone", "code", request.getZoneCode());
+                });
         
         // 3. Load the PricingRule for the product
         PricingRule pricingRule = pricingRuleRepository.findByProductId(product.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Pricing rule not found for product ID: " + product.getId()));
+                .orElseThrow(() -> {
+                    log.error("Pricing rule not found for product ID: {}", product.getId());
+                    return new ResourceNotFoundException("PricingRule", "productId", product.getId());
+                });
         
         // 4. Determine age category
         AgeCategory ageCategory = AgeCategory.fromAge(request.getClientAge());
@@ -155,6 +166,23 @@ public class PricingService {
     }
 
     /**
+     * Helper to deserialize rules safely.
+     * Prevents JsonProcessingException crashes on mangled JSON array strings.
+     *
+     * @param rulesJson the JSON encoded applied rules
+     * @return the deserialized string list
+     */
+    private List<String> deserializeRules(String rulesJson) {
+        if (rulesJson == null || rulesJson.isBlank()) return new ArrayList<>();
+        try {
+            return objectMapper.readValue(rulesJson, new TypeReference<List<String>>() {});
+        } catch (JsonProcessingException e) {
+            log.error("Failed to parse JSON string: {}. Returning empty list.", rulesJson, e);
+            return new ArrayList<>();
+        }
+    }
+
+    /**
      * Map a saved Quote entity to a QuoteResponse DTO.
      * Prevents null pointer exceptions by verifying nested relationships.
      *
@@ -194,7 +222,10 @@ public class PricingService {
      */
     public QuoteResponse getQuote(Long id) {
         Quote quote = quoteRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Quote not found with ID: " + id));
+                .orElseThrow(() -> {
+                    log.error("Quote not found with ID: {}", id);
+                    return new ResourceNotFoundException("Quote", "id", id);
+                });
 
         List<String> appliedRules = deserializeRules(quote.getAppliedRules());
         return mapToResponse(quote, appliedRules);

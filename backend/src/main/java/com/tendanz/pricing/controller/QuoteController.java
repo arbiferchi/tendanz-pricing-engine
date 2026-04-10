@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.tendanz.pricing.exception.ResourceNotFoundException;
+
 import java.util.List;
 
 /**
@@ -54,7 +56,7 @@ public class QuoteController {
      * @param id the unique identifier of the quote to retrieve (must be positive)
      * @return ResponseEntity containing the QuoteResponse with HTTP 200 OK status on success
      * 
-     * @throws IllegalArgumentException (caught by GlobalExceptionHandler)
+     * @throws ResourceNotFoundException (caught by GlobalExceptionHandler)
      *         Returns HTTP 404 NOT_FOUND if the quote with the given ID does not exist
      *
      * @apiNote 
@@ -77,7 +79,7 @@ public class QuoteController {
             QuoteResponse response = pricingService.getQuote(id);
             log.info("Successfully retrieved quote with ID: {}", id);
             return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
+        } catch (ResourceNotFoundException e) {
             log.warn("Quote not found for ID: {}. Error: {}", id, e.getMessage());
             throw e;
         }

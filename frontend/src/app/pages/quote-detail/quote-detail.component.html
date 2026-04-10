@@ -1,0 +1,87 @@
+<div class="quote-detail-container">
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading"></div>
+    <p>Loading quote details...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="errorMessage" class="alert error">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Quote Details -->
+  <div *ngIf="!loading && quote" class="quote-detail">
+    <div class="header">
+      <h2>Quote #{{ quote.quoteId }}</h2>
+      <button class="secondary" routerLink="/quotes">Back to Quotes</button>
+    </div>
+
+    <div class="grid">
+      <!-- Client Information -->
+      <div class="card">
+        <h3>Client Information</h3>
+        <div class="detail-item">
+          <span class="label">Name:</span>
+          <span class="value">{{ quote.clientName }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Age:</span>
+          <span class="value">{{ quote.clientAge }} years</span>
+        </div>
+      </div>
+
+      <!-- Insurance Details -->
+      <div class="card">
+        <h3>Insurance Details</h3>
+        <div class="detail-item">
+          <span class="label">Product:</span>
+          <span class="value">{{ quote.productName }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Zone:</span>
+          <span class="value">{{ quote.zoneName }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pricing Breakdown -->
+    <div class="card pricing-card">
+      <h3>Pricing Breakdown</h3>
+
+      <!-- Applied Rules -->
+      <div class="rules-section">
+        <h4>Applied Pricing Rules:</h4>
+        <ul class="rules-list">
+          <li *ngFor="let rule of quote.appliedRules">
+            {{ rule }}
+          </li>
+        </ul>
+        <p *ngIf="!quote.appliedRules || quote.appliedRules.length === 0" class="text-muted">No rules applied</p>
+      </div>
+
+      <!-- Price Summary -->
+      <table class="pricing-table">
+        <tbody>
+          <tr>
+            <td class="label">Base Price:</td>
+            <td class="value">{{ quote.basePrice | number:'1.2-2' }} TND</td>
+          </tr>
+          <tr class="total">
+            <td class="label">Final Price:</td>
+            <td class="value">{{ quote.finalPrice | number:'1.2-2' }} TND</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Metadata -->
+    <div class="card meta-card">
+      <h4>Information</h4>
+      <div class="detail-item">
+        <span class="label">Created:</span>
+        <span class="value">{{ quote.createdAt | date:'medium' }}</span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,178 @@
+.quote-list-container {
+  padding: var(--spacing-lg) 0;
+}
+
+h2 {
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-lg);
+  font-size: 1.75rem;
+}
+
+.filters-panel {
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--secondary-color);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-lg);
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.filter-group {
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-group label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.filter-group input,
+.filter-group select {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 0.95rem;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+button.secondary {
+  background-color: white;
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+button.secondary:hover {
+  background-color: #f5f5f5;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+}
+
+.loading {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--secondary-color);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-bottom: var(--spacing-md);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.table-container {
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.sort-controls {
+  display: flex;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background-color: var(--secondary-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.sort-controls button {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: white;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sort-controls button:hover {
+  background-color: #f5f5f5;
+}
+
+.sort-controls button.active {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background-color: var(--secondary-color);
+}
+
+th {
+  padding: var(--spacing-md);
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-color);
+  border-bottom: 2px solid var(--border-color);
+}
+
+td {
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+}
+
+tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+tbody tr.clickable {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+tbody tr.clickable:hover {
+  background-color: #f0f0f0;
+}
+
+td.price {
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.empty-state {
+  text-align: center;
+  padding: var(--spacing-xl);
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+}
+
+.empty-state p {
+  color: var(--text-light);
+  margin: 0;
+}
+
+.empty-state a {
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+.empty-state a:hover {
+  color: var(--primary-light);
+}

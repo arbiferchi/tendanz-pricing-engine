@@ -1,0 +1,86 @@
+<div class="quote-list-container">
+  <h2>Quotes</h2>
+
+  <!-- Error -->
+  <div *ngIf="errorMessage" class="alert error">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-panel">
+    <div class="filter-group">
+      <label for="productFilter">Product:</label>
+      <select id="productFilter" [(ngModel)]="selectedProductId" (change)="applyFilters()">
+        <option [ngValue]="null">-- All Products --</option>
+        <option *ngFor="let product of products" [ngValue]="product.id">
+          {{ product.name }}
+        </option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="minPriceFilter">Minimum Price (TND):</label>
+      <input
+        type="number"
+        id="minPriceFilter"
+        [(ngModel)]="minPrice"
+        (change)="applyFilters()"
+        placeholder="0"
+      />
+    </div>
+
+    <button class="secondary" (click)="resetFilters()">Reset Filters</button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading"></div>
+    <p>Loading quotes...</p>
+  </div>
+
+  <!-- Quotes Table -->
+  <div *ngIf="!loading && filteredQuotes.length > 0" class="table-container">
+    <div class="sort-controls">
+      <button
+        [class.active]="sortField === 'date'"
+        (click)="changeSortField('date')"
+      >
+        Date {{ sortField === 'date' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}
+      </button>
+      <button
+        [class.active]="sortField === 'price'"
+        (click)="changeSortField('price')"
+      >
+        Price {{ sortField === 'price' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}
+      </button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Client Name</th>
+          <th>Product</th>
+          <th>Zone</th>
+          <th>Final Price (TND)</th>
+          <th>Created Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let quote of filteredQuotes" (click)="viewQuote(quote.quoteId)" class="clickable">
+          <td>{{ quote.quoteId }}</td>
+          <td>{{ quote.clientName }}</td>
+          <td>{{ quote.productName }}</td>
+          <td>{{ quote.zoneName }}</td>
+          <td class="price">{{ quote.finalPrice | number:'1.2-2' }}</td>
+          <td>{{ quote.createdAt | date:'short' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && filteredQuotes.length === 0" class="empty-state">
+    <p>No quotes found. <a routerLink="/quotes/new">Create one now</a></p>
+  </div>
+</div>

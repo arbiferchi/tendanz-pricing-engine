@@ -201,18 +201,34 @@ public class PricingService {
     }
 
     /**
-     * Deserialize the rules JSON string back to a list.
+     * Retrieves all quotes based on optional filtering criteria.
+     * Supports filtering by product ID and/or a minimum final price.
      *
-     * @param rulesJson the JSON string
-     * @return the list of rules
+     * @param productId an optional product ID to filter the quotes.
+     * @param minPrice an optional minimum final price to filter the quotes.
+     * @return a list of quote responses matching the given criteria.
      */
-    private List<String> deserializeRules(String rulesJson) {
-        try {
-            return objectMapper.readValue(rulesJson,
-                    objectMapper.getTypeFactory().constructCollectionType(List.class, String.class));
-        } catch (Exception e) {
-            log.error("Error deserializing rules from JSON", e);
-            return new ArrayList<>();
+    public List<QuoteResponse> getAllQuotes(Long productId, Double minPrice) {
+        
+        log.info("Fetching quotes with filters - productId: {}, minPrice: {}", productId, minPrice);
+        
+        List<Quote> quotes;
+
+        if (productId != null && minPrice != null) {
+            quotes = quoteRepository.findByProductIdAndFinalPriceGreaterThanEqual(productId, BigDecimal.valueOf(minPrice));
+        } else if (productId != null) {
+            quotes = quoteRepository.findByProductId(productId);
+        } else if (minPrice != null) {
+            quotes = quoteRepository.findByFinalPriceGreaterThanEqual(BigDecimal.valueOf(minPrice));
+        } else {
+            quotes = quoteRepository.findAll();
         }
+
+        return quotes.stream()
+                .map(quote -> {
+                    List<String> rules = deserializeRules(quote.getAppliedRules());
+                    return mapToResponse(quote, rules);
+                })
+                .toList();
     }
 }

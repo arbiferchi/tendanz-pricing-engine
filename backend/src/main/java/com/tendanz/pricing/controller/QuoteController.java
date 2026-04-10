@@ -84,30 +84,27 @@ public class QuoteController {
     }
 
     /**
-     * TODO: Get all quotes with optional filters.
+     * Get all quotes with optional filters.
      *
-     * Requirements:
-     * - Support optional query parameter: productId (Long) to filter by product
-     * - Support optional query parameter: minPrice (Double) to filter by minimum final price
-     * - Use QuoteRepository methods for querying
-     * - Convert Quote entities to QuoteResponse DTOs
-     * - Return HTTP 200 OK with the list
-     *
-     * Examples:
-     * - GET /api/quotes                          -> all quotes
-     * - GET /api/quotes?productId=1              -> quotes for product 1
-     * - GET /api/quotes?minPrice=500             -> quotes with finalPrice >= 500
-     * - GET /api/quotes?productId=1&minPrice=500 -> combined filters
+     * This endpoint retrieves quotes from the system optionally filtering by product ID 
+     * and/or a minimum final price.
      *
      * @param productId optional product ID filter
      * @param minPrice optional minimum price filter
-     * @return list of quotes matching filters
+     * @return list of quotes matching the criteria wrapped in an HTTP 200 OK status
      */
     @GetMapping
     public ResponseEntity<List<QuoteResponse>> getAllQuotes(
-            @RequestParam(required = false) Long productId,
-            @RequestParam(required = false) Double minPrice) {
-        // TODO: Implement filtering and retrieval logic
-        throw new UnsupportedOperationException("TODO: Implement getAllQuotes endpoint");
+            @RequestParam(required = false) 
+            @Positive(message = "Product ID must be a positive integer") Long productId,
+            @RequestParam(required = false) 
+            @Positive(message = "Minimum price must be a positive value") Double minPrice) {
+        
+        log.info("Received request to fetch quotes with filters - ProductId: {}, MinPrice: {}", productId, minPrice);
+        
+        List<QuoteResponse> responses = pricingService.getAllQuotes(productId, minPrice);
+        
+        log.info("Successfully retrieved {} quotes matching the criteria", responses.size());
+        return ResponseEntity.ok(responses);
     }
 }

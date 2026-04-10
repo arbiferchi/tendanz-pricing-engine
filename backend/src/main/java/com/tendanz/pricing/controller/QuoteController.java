@@ -30,21 +30,18 @@ public class QuoteController {
     private final PricingService pricingService;
 
     /**
-     * TODO: Create a new quote.
+     * Create a new quote based on the provided request parameters.
      *
-     * Requirements:
-     * - Accept a QuoteRequest body with @Valid validation
-     * - Call PricingService.calculateQuote()
-     * - Return HTTP 201 CREATED with the QuoteResponse
-     * - Let the GlobalExceptionHandler handle errors
-     *
-     * @param request the quote request
-     * @return the created quote response with 201 status
+     * @param request Validated quote request payload
+     * @return QuoteResponse wrapped in HTTP 201 Created entity
      */
     @PostMapping
     public ResponseEntity<QuoteResponse> createQuote(@Valid @RequestBody QuoteRequest request) {
-        // TODO: Implement this endpoint
-        throw new UnsupportedOperationException("TODO: Implement createQuote endpoint");
+        log.info("Received request to create a new quote for client: {}", request.getClientName());
+        
+        QuoteResponse response = pricingService.calculateQuote(request);
+        log.info("Successfully created quote with ID: {}", response.getQuoteId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     /**

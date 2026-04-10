@@ -1,6 +1,7 @@
 package com.tendanz.pricing;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -18,11 +19,14 @@ public class PricingApplication {
 
     /**
      * Provide ObjectMapper bean for JSON serialization/deserialization.
+     * Registers JavaTimeModule to support Java 8 date/time types (LocalDateTime, LocalDate, etc).
      *
-     * @return configured ObjectMapper
+     * @return configured ObjectMapper with JSR310 support
      */
     @Bean
     public ObjectMapper objectMapper() {
-        return new ObjectMapper();
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        return mapper;
     }
 }

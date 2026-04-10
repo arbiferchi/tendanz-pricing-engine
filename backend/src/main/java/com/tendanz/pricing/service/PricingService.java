@@ -155,23 +155,31 @@ public class PricingService {
     }
 
     /**
-     * Convert a Quote entity to a QuoteResponse DTO.
-     * This helper is provided — use it in your calculateQuote implementation.
+     * Map a saved Quote entity to a QuoteResponse DTO.
+     * Prevents null pointer exceptions by verifying nested relationships.
      *
-     * @param quote the quote entity
-     * @param appliedRules the list of applied rules
-     * @return the quote response DTO
+     * @param quote the persisted quote entity
+     * @param appliedRules the list of human-readable applied rules
+     * @return the fully populated quote response DTO
+     * @throws IllegalArgumentException if the provided quote is null
      */
     private QuoteResponse mapToResponse(Quote quote, List<String> appliedRules) {
+        if (quote == null) {
+            throw new IllegalArgumentException("Quote entity cannot be null when mapping to response");
+        }
+
+        String productName = quote.getProduct() != null ? quote.getProduct().getName() : "Unknown Product";
+        String zoneName = quote.getZone() != null ? quote.getZone().getName() : "Unknown Zone";
+
         return QuoteResponse.builder()
                 .quoteId(quote.getId())
-                .productName(quote.getProduct().getName())
-                .zoneName(quote.getZone().getName())
+                .productName(productName)
+                .zoneName(zoneName)
                 .clientName(quote.getClientName())
                 .clientAge(quote.getClientAge())
                 .basePrice(quote.getBasePrice())
                 .finalPrice(quote.getFinalPrice())
-                .appliedRules(appliedRules)
+                .appliedRules(appliedRules != null ? appliedRules : new ArrayList<>())
                 .createdAt(quote.getCreatedAt())
                 .build();
     }

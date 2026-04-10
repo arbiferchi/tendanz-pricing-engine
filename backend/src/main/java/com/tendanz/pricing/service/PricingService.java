@@ -20,6 +20,8 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 
 /**
  * Service for handling pricing and quote calculations.
@@ -132,17 +134,22 @@ public class PricingService {
     }
 
     /**
-     * Convert a list of applied rules to a JSON string for storage.
-     * This helper is provided — use it in your calculateQuote implementation.
+     * Serializes a list of applied pricing rules into a valid JSON string.
+     * This is required because rules are saved as a CLOB/String payload in the Quote Entity.
      *
-     * @param rules the list of rule descriptions
-     * @return the JSON string representation
+     * @param rules the list of rule descriptions to serialize
+     * @return the serialized JSON string representation, or "[]" gracefully on error
      */
     private String convertRulesToJson(List<String> rules) {
+        if (rules == null || rules.isEmpty()) {
+            log.warn("convertRulesToJson was called with a null or empty rules list. Returning empty JSON array.");
+            return "[]";
+        }
+        
         try {
             return objectMapper.writeValueAsString(rules);
-        } catch (Exception e) {
-            log.error("Error converting rules to JSON", e);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to serialize pricing rules to JSON string. Fallback to empty array.", e);
             return "[]";
         }
     }

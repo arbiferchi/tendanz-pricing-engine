@@ -2,13 +2,16 @@ package com.tendanz.pricing.service;
 
 import com.tendanz.pricing.dto.QuoteRequest;
 import com.tendanz.pricing.dto.QuoteResponse;
+import com.tendanz.pricing.dto.QuoteHistoryResponse;
 import com.tendanz.pricing.entity.PricingRule;
 import com.tendanz.pricing.entity.Product;
 import com.tendanz.pricing.entity.Quote;
+import com.tendanz.pricing.entity.QuoteHistory;
 import com.tendanz.pricing.entity.Zone;
 import com.tendanz.pricing.enums.AgeCategory;
 import com.tendanz.pricing.repository.PricingRuleRepository;
 import com.tendanz.pricing.repository.ProductRepository;
+import com.tendanz.pricing.repository.QuoteHistoryRepository;
 import com.tendanz.pricing.repository.QuoteRepository;
 import com.tendanz.pricing.repository.ZoneRepository;
 import com.tendanz.pricing.exception.ResourceNotFoundException;
@@ -40,6 +43,7 @@ public class PricingService {
     private final ZoneRepository zoneRepository;
     private final PricingRuleRepository pricingRuleRepository;
     private final QuoteRepository quoteRepository;
+    private final QuoteHistoryRepository quoteHistoryRepository;
     private final ObjectMapper objectMapper;
 
     /**
@@ -262,5 +266,113 @@ public class PricingService {
             List<String> rules = deserializeRules(quote.getAppliedRules());
             return mapToResponse(quote, rules);
         });
+    }
+
+    /**
+     * Updates an existing quote and records the historical change.
+     * 
+     * @param id The quote ID to update
+     * @param request The new quote details
+     * @return The updated quote response
+     */
+    @Transactional
+    public QuoteResponse updateQuote(Long id, QuoteRequest request) {
+        log.info("Updating Quote ID: {} for Client: {}", id, request.getClientName());
+        
+        Quote existingQuote = quoteRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Quote", "id", id));
+                
+        Product product = productRepository.findById(request.getProductId())
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", request.getProductId()));
+                
+        Zone zone = zoneRepository.findByCode(request.getZoneCode())
+                .orElseThrow(() -> new ResourceNotFoundException("Zone", "code", request.getZoneCode()));
+                
+        PricingRule rule = pricingRuleRepository.findByProductId(product.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Pricing rule", "productId", product.getId()));
+
+        // Calculate differences for summary
+        List<String> changes = new ArrayList<>();
+        if (!existingQuote.getProduct().getId().equals(product.getId())) {
+            changes.add("Product: " + existingQuote.getProduct().getName() + " -> " + product.getName());
+        }
+        if (!existingQuote.getZone().getCode().equals(zone.getCode())) {
+            changes.add("Zone: " + existingQuote.getZone().getName() + " -> " + zone.getName());
+        }
+        if (!existingQuote.getClientAge().equals(request.getClientAge())) {
+            changes.add("Client Age: " + existingQuote.getClientAge() + " -> " + request.getClientAge());
+        }
+        if (!existingQuote.getClientName().equals(request.getClientName())) {
+            changes.add("Client Name: " + existingQuote.getClientName() + " -> " + request.getClientName());
+        }
+
+        // If no changes, avoid processing
+        if (changes.isEmpty()) {
+            return mapToResponse(existingQuote, deserializeRules(existingQuote.getAppliedRules()));
+        }
+
+        // Perform new pricing calculation
+        AgeCategory category = AgeCategory.fromAge(request.getClientAge());
+        BigDecimal ageFactor = getAgeFactor(rule, category);
+        BigDecimal baseRate = rule.getBaseRate();
+        BigDecimal zoneRiskCoefficient = zone.getRiskCoefficient();
+
+        BigDecimal finalPrice = baseRate
+                .multiply(ageFactor)
+                .multiply(zoneRiskCoefficient)
+                .setScale(2, RoundingMode.HALF_UP);
+
+        String changeSummary = String.join(", ", changes);
+        
+        // Track the old price and change summary in history table
+        QuoteHistory history = QuoteHistory.builder()
+                .quote(existingQuote)
+                .previousPrice(existingQuote.getFinalPrice())
+                .newPrice(finalPrice)
+                .changeSummary(changeSummary)
+                .build();
+        quoteHistoryRepository.save(history);
+
+        // Create new applied rules
+        List<String> rulesList = new ArrayList<>();
+        rulesList.add(String.format(java.util.Locale.US, "Produit (%s): Base %.2f", product.getName(), baseRate));
+        rulesList.add(String.format(java.util.Locale.US, "Age (%s): x%.2f", category.name(), ageFactor));
+        rulesList.add(String.format(java.util.Locale.US, "Zone Risk (%s): x%.2f", zone.getName(), zoneRiskCoefficient));
+        
+        String jsonRules = convertRulesToJson(rulesList);
+
+        // Update the existing entity
+        existingQuote.setProduct(product);
+        existingQuote.setZone(zone);
+        existingQuote.setClientName(request.getClientName());
+        existingQuote.setClientAge(request.getClientAge());
+        existingQuote.setBasePrice(baseRate);
+        existingQuote.setFinalPrice(finalPrice);
+        existingQuote.setAppliedRules(jsonRules);
+
+        Quote updatedQuote = quoteRepository.save(existingQuote);
+
+        return mapToResponse(updatedQuote, rulesList);
+    }
+    
+    /**
+     * Retrieve modification history for a given quote ID.
+     */
+    public List<QuoteHistoryResponse> getQuoteHistory(Long quoteId) {
+        quoteRepository.findById(quoteId) // Verify existence
+                .orElseThrow(() -> new ResourceNotFoundException("Quote", "id", quoteId));
+                
+        List<QuoteHistory> historyList = quoteHistoryRepository.findByQuoteIdOrderByModifiedAtDesc(quoteId);
+        
+        return historyList.stream()
+                .map(history -> QuoteHistoryResponse.builder()
+                        .id(history.getId())
+                        .quoteId(history.getQuote().getId())
+                        .previousPrice(history.getPreviousPrice())
+                        .newPrice(history.getNewPrice())
+                        .changeSummary(history.getChangeSummary())
+                        .modifiedAt(history.getModifiedAt())
+                        .build())
+                .toList();
     }
 }

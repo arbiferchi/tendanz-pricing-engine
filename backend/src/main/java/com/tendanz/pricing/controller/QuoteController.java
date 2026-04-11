@@ -2,6 +2,7 @@ package com.tendanz.pricing.controller;
 
 import com.tendanz.pricing.dto.QuoteRequest;
 import com.tendanz.pricing.dto.QuoteResponse;
+import com.tendanz.pricing.dto.QuoteHistoryResponse;
 import com.tendanz.pricing.service.PricingService;
 import com.tendanz.pricing.service.PdfService;
 import jakarta.validation.Valid;
@@ -141,5 +142,39 @@ public class QuoteController {
         headers.setContentDispositionFormData("attachment", "quote_" + id + ".pdf");
         
         return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+    }
+
+    /**
+     * Update an existing quote.
+     *
+     * @param id The ID of the quote to update
+     * @param request Validated quote request payload
+     * @return QuoteResponse containing the updated details
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<QuoteResponse> updateQuote(
+            @PathVariable @Positive(message = "Quote ID must be a positive integer") Long id,
+            @Valid @RequestBody QuoteRequest request) {
+        
+        log.info("Received request to update quote with ID: {}", id);
+        
+        QuoteResponse response = pricingService.updateQuote(id, request);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Retrieve the history of modifications for a specific quote.
+     *
+     * @param id the unique identifier of the quote
+     * @return List of QuoteHistoryResponse representing all changes to the quote
+     */
+    @GetMapping("/{id}/history")
+    public ResponseEntity<List<QuoteHistoryResponse>> getQuoteHistory(
+            @PathVariable @Positive(message = "Quote ID must be a positive integer") Long id) {
+        
+        log.info("Received request to fetch history for quote ID: {}", id);
+        
+        List<QuoteHistoryResponse> history = pricingService.getQuoteHistory(id);
+        return ResponseEntity.ok(history);
     }
 }

@@ -1,0 +1,45 @@
+<div class="quote-history-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="title-area">
+      <h2>Modifications History <span *ngIf="quoteId">for Quote #{{ quoteId }}</span></h2>
+      <button class="secondary" (click)="goBack()">← Back to Quotes</button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading"></div>
+    <p>Loading modification trail...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="errorMessage" class="alert error">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && historyRecords.length === 0 && !errorMessage" class="empty-state">
+    <p>No history found. This quote has never been modified.</p>
+  </div>
+
+  <!-- History Timeline -->
+  <div *ngIf="!loading && historyRecords.length > 0" class="timeline-container">
+    <div class="timeline-item" *ngFor="let record of historyRecords">
+      <div class="timeline-dot"></div>
+      <div class="timeline-content card">
+        <div class="timeline-header">
+          <span class="date">{{ record.modifiedAt | date:'medium' }}</span>
+        </div>
+        <div class="timeline-body">
+          <p class="summary">{{ record.changeSummary }}</p>
+          <div class="price-delta">
+            <span class="old-price">{{ record.previousPrice | number:'1.2-2' }} TND</span>
+            <span class="arrow">→</span>
+            <span class="new-price">{{ record.newPrice | number:'1.2-2' }} TND</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

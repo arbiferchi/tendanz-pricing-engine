@@ -73,10 +73,33 @@
           <td>{{ quote.productName }}</td>
           <td>{{ quote.zoneName }}</td>
           <td class="price">{{ quote.finalPrice | number:'1.2-2' }}</td>
-          <td>{{ quote.createdAt | date:'short' }}</td>
+          <td>{{ quote.createdAt | date:'medium' }}</td>
         </tr>
       </tbody>
     </table>
+
+    <!-- Pagination Controls -->
+    <div class="pagination-controls">
+      <button 
+        [disabled]="currentPage === 0" 
+        (click)="prevPage()"
+        class="secondary"
+      >
+        Previous
+      </button>
+      
+      <div class="page-info">
+        Page {{ currentPage + 1 }} of {{ totalPages || 1 }} ({{ totalElements }} total quotes)
+      </div>
+
+      <button 
+        [disabled]="currentPage === totalPages - 1 || totalPages <= 1" 
+        (click)="nextPage()"
+        class="primary"
+      >
+        Next
+      </button>
+    </div>
   </div>
 
   <!-- Empty State -->

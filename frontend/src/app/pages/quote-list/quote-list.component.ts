@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -6,27 +6,11 @@ import { QuoteService } from '../../services/quote.service';
 import { ProductService } from '../../services/product.service';
 import { QuoteResponse } from '../../models/quote.model';
 import { Product } from '../../models/product.model';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 /**
  * Component for displaying a list of all quotes
- *
- * TODO: Candidate must implement the following:
- * 1. Load all quotes on component initialization using QuoteService.getQuotes()
- *
- * 2. Load products for filter dropdown using ProductService.getProducts()
- *
- * 3. Implement filtering in applyFilters():
- *    - Build filter object from selectedProductId and minPrice
- *    - Call QuoteService.getQuotes(filters)
- *    - Update filteredQuotes with results
- *
- * 4. Implement sorting in sortQuotes():
- *    - Sort by creation date (ascending/descending)
- *    - Sort by final price (ascending/descending)
- *
- * 5. Implement viewQuote() to navigate to /quotes/:id
- *
- * 6. Handle loading and error states
  */
 @Component({
   selector: 'app-quote-list',
@@ -35,20 +19,29 @@ import { Product } from '../../models/product.model';
   templateUrl: './quote-list.component.html',
   styleUrl: './quote-list.component.css'
 })
-export class QuoteListComponent implements OnInit {
+export class QuoteListComponent implements OnInit, OnDestroy {
   quotes: QuoteResponse[] = [];
   filteredQuotes: QuoteResponse[] = [];
   products: Product[] = [];
   loading = false;
+  loadingProducts = false;
   errorMessage: string | null = null;
+  
+  private destroy$ = new Subject<void>();
 
   // Filter state
-  selectedProductId: number | null = null;
-  minPrice: number | null = null;
+  selectedProductId: number | null | undefined = undefined;
+  minPrice: number | null | undefined = undefined;
 
   // Sort state
   sortField: 'date' | 'price' = 'date';
   sortDirection: 'asc' | 'desc' = 'desc';
+
+  // Pagination state
+  currentPage = 0;
+  pageSize = 10;
+  totalPages = 1;
+  totalElements = 0;
 
   constructor(
     private quoteService: QuoteService,
@@ -57,33 +50,116 @@ export class QuoteListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // TODO: Load products for filter dropdown
-    // TODO: Load quotes from QuoteService
-    // TODO: Handle loading and error states
+    this.loadProducts();
+    this.loadQuotes();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /**
-   * Apply filters to the quotes
-   *
-   * TODO: Implement filtering
-   * - Get filter values from component properties
-   * - Call quoteService.getQuotes(filters)
-   * - Update filteredQuotes with results
-   * - Call sortQuotes() after receiving results
-   * - Handle errors
+   * Initialize products dropdown data
+   */
+  private loadProducts(): void {
+    this.loadingProducts = true;
+    this.productService.getProducts()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.products = data;
+          this.loadingProducts = false;
+        },
+        error: (err) => {
+          console.error('Failed to load filter products', err);
+          this.loadingProducts = false;
+        }
+      });
+  }
+
+  /**
+   * Load base quotes (optionally using current active filters from inputs)
+   */
+  private loadQuotes(): void {
+    this.loading = true;
+    this.errorMessage = null;
+
+    const filters: any = {
+      page: this.currentPage,
+      size: this.pageSize
+    };
+    if (this.selectedProductId) filters.productId = this.selectedProductId;
+    if (this.minPrice) filters.minPrice = this.minPrice;
+
+    this.quoteService.getQuotes(filters)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          if (response && response.content) {
+            this.quotes = response.content;
+            this.filteredQuotes = [...response.content];
+            this.totalPages = response.totalPages;
+            this.totalElements = response.totalElements;
+            this.currentPage = response.number;
+          } else {
+            // Fallback if backend suddenly returned array instead of pagination
+            let data = response as any;
+            this.quotes = data;
+            this.filteredQuotes = [...data];
+            this.totalPages = 1;
+            this.totalElements = data.length;
+          }
+          this.sortQuotes();
+          this.loading = false;
+        },
+        error: (err) => {
+          this.errorMessage = 'Failed to load quotes. ' + err.message;
+          this.loading = false;
+        }
+      });
+  }
+
+  /**
+   * Pagination Controls
+   */
+  nextPage(): void {
+    if (this.currentPage < this.totalPages - 1) {
+      this.currentPage++;
+      this.loadQuotes();
+    }
+  }
+
+  prevPage(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.loadQuotes();
+    }
+  }
+
+  goToPage(page: number): void {
+    if (page >= 0 && page < this.totalPages) {
+      this.currentPage = page;
+      this.loadQuotes();
+    }
+  }
+
+  /**
+   * Apply filters to the quotes bounding to API params directly
    */
   applyFilters(): void {
-    // TODO: Implement filtering logic
-    console.log('Filters applied (TODO: implement)');
+    this.currentPage = 0; // Reset to page 0 on filter change
+    this.loadQuotes();
   }
 
   /**
    * Reset all filters and reload all quotes
    */
   resetFilters(): void {
-    this.selectedProductId = null;
-    this.minPrice = null;
-    // TODO: Reload all quotes
+    this.selectedProductId = undefined;
+    this.minPrice = undefined;
+    this.currentPage = 0;
+    this.loadQuotes();
   }
 
   /**
@@ -100,24 +176,30 @@ export class QuoteListComponent implements OnInit {
   }
 
   /**
-   * Sort filteredQuotes in memory
-   *
-   * TODO: Implement sorting
-   * - For 'date': sort by createdAt
-   * - For 'price': sort by finalPrice
-   * - Apply sortDirection (asc/desc)
+   * Sort filteredQuotes in memory locally representing table adjustments
    */
   private sortQuotes(): void {
-    // TODO: Implement in-memory sorting of this.filteredQuotes
+    if (!this.filteredQuotes || this.filteredQuotes.length === 0) return;
+
+    this.filteredQuotes.sort((a, b) => {
+      let comparison = 0;
+      
+      if (this.sortField === 'date') {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        comparison = dateA - dateB;
+      } else if (this.sortField === 'price') {
+        comparison = a.finalPrice - b.finalPrice;
+      }
+
+      return this.sortDirection === 'asc' ? comparison : -comparison;
+    });
   }
 
   /**
-   * Navigate to quote detail page
-   *
-   * TODO: Implement navigation to /quotes/:id
-   * Hint: use this.router.navigate(['/quotes', id])
+   * Navigate to quote detail page explicitly 
    */
   viewQuote(id: number): void {
-    // TODO: Navigate to quote detail
+    this.router.navigate(['/quotes', id]);
   }
 }

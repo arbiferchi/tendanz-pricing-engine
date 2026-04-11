@@ -176,3 +176,13 @@ td.price {
 .empty-state a:hover {
   color: var(--primary-light);
 }
+
+.pagination-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+}

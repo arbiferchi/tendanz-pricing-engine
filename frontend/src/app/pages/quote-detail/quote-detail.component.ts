@@ -66,4 +66,33 @@ export class QuoteDetailComponent implements OnInit, OnDestroy {
         }
       });
   }
+
+  /**
+   * Download a quote PDF
+   */
+  downloadPdf(id: number): void {
+    this.quoteService.getQuotePdf(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (blob: Blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `quote-${id}.pdf`;
+          link.click();
+          window.URL.revokeObjectURL(url);
+        },
+        error: (err: any) => {
+          console.error('Error downloading PDF:', err);
+          this.errorMessage = 'Failed to download PDF.';
+        }
+      });
+  }
+
+  /**
+   * Navigate to Quote Editor
+   */
+  editQuote(id: number): void {
+    this.router.navigate(['/quotes', id, 'edit']);
+  }
 }

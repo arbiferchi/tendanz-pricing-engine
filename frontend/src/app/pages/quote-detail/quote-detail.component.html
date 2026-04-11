@@ -14,7 +14,11 @@
   <div *ngIf="!loading && quote" class="quote-detail">
     <div class="header">
       <h2>Quote #{{ quote.quoteId }}</h2>
-      <button class="secondary" routerLink="/quotes">Back to Quotes</button>
+      <div class="header-actions">
+        <button class="action-btn download-btn" (click)="downloadPdf(quote.quoteId)" title="Download PDF Quote">⇓ PDF</button>
+        <button class="action-btn edit-btn" (click)="editQuote(quote.quoteId)" title="Edit Quote">✎ Edit</button>
+        <button class="secondary" routerLink="/quotes">Back to Quotes</button>
+      </div>
     </div>
 
     <div class="grid">

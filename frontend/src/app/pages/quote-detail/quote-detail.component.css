@@ -40,6 +40,29 @@
   border-bottom: 2px solid var(--border-color);
 }
 
+.header-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
+}
+
+.action-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: var(--secondary-color);
+}
+
+.download-btn { color: #E53E3E; border-color: #FEB2B2; background-color: #FFF5F5; }
+.download-btn:hover { background-color: #E53E3E; color: white; border-color: #E53E3E; }
+
+.edit-btn { color: #3182CE; border-color: #BEE3F8; background-color: #EBF8FF; }
+.edit-btn:hover { background-color: #3182CE; color: white; border-color: #3182CE; }
+
 .header h2 {
   color: var(--primary-color);
   margin: 0;

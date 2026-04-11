@@ -1,0 +1,49 @@
+<div class="list-container">
+  <div class="header-actions">
+    <h2>Insurance Products</h2>
+    <a routerLink="/products/new" class="button primary">Add New Product</a>
+  </div>
+
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+  </div>
+
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading"></div>
+    <p>Loading products...</p>
+  </div>
+
+  <div *ngIf="!isLoading && !error" class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Base Rate</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let product of products">
+          <td>#{{ product.id }}</td>
+          <td><strong>{{ product.name }}</strong></td>
+          <td class="text-muted">{{ product.description || 'N/A' }}</td>
+          <td>{{ product.baseRate ? (product.baseRate | currency:'EUR') : 'N/A' }}</td>
+          <td class="actions-cell">
+            <a [routerLink]="['/products', product.id, 'edit']" class="button secondary small">Edit Rules</a>
+          </td>
+        </tr>
+        <tr *ngIf="products.length === 0">
+          <td colspan="5" class="empty-state">No products found. Add a new product to get started.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pagination" *ngIf="totalPages > 0">
+      <button class="button secondary small" [disabled]="currentPage === 0" (click)="prevPage()">Previous</button>
+      <span class="page-info">Page {{ currentPage + 1 }} of {{ totalPages }}</span>
+      <button class="button secondary small" [disabled]="currentPage >= totalPages - 1" (click)="nextPage()">Next</button>
+    </div>
+  </div>
+</div>

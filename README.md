@@ -1,101 +1,90 @@
-# Test Technique — Full Stack Engineer — Tendanz Group
+# Tendanz Pricing Engine
+A full-stack enterprise application for managing dynamic insurance pricing rules, calculating personalized quotes, and generating PDF documents.
 
-## Moteur de Tarification Assurance
+## Table of Contents
 
-### Contexte
+- [Project Overview](#project-overview)
+- [Repository Structure](#repository-structure)
+- [Getting Started](#getting-started)
+- [Screenshots](#-screenshots)
+- [Architecture Overview](#architecture-overview)
+- [API Overview](#api-overview)
 
-Vous rejoignez une équipe projet chez Tendanz Group pour développer un **moteur de tarification d'assurance**. Le système doit permettre de calculer le prix d'une couverture en fonction du profil client, du produit choisi et de la zone géographique.
+## Project Overview
+This project solves the challenge of dynamic insurance pricing. It provides administrators with a robust system to create/edit insurance products and their associated demographic pricing factors. It empowers agents to generate real-time quotes for clients based on age, selected product, and geographic zone.
 
-### Structure du projet
+**Tech Stack Summary:**
+- **Backend:** Java 17+, Spring Boot 3, Spring Data JPA, H2 Database (in-memory)
+- **Frontend:** Angular 17 (Standalone Components), TypeScript, RxJS, HTML5/CSS3
+- **Tooling:** Maven, npm, Angular CLI
 
-```
-├── backend/          # Spring Boot 3.2 — Java 17
-│   ├── pom.xml
-│   └── src/
-│       ├── main/java/com/tendanz/pricing/
-│       │   ├── controller/
-│       │   │   ├── ProductController.java  # Fourni (GET /api/products)
-│       │   │   └── QuoteController.java    # → À implémenter (TODO)
-│       │   ├── service/
-│       │   │   └── PricingService.java     # → À implémenter (TODO)
-│       │   ├── repository/
-│       │   │   └── QuoteRepository.java    # → À compléter (TODO)
-│       │   ├── entity/        # Entités JPA (fournies)
-│       │   ├── dto/           # DTOs (fournis)
-│       │   ├── exception/
-│       │   │   └── GlobalExceptionHandler  # → À implémenter (TODO)
-│       │   └── enums/         # AgeCategory (fourni)
-│       └── main/resources/
-│           ├── schema.sql     # DDL (fourni)
-│           ├── data.sql       # Données initiales (fourni)
-│           └── application.yml
-│
-└── frontend/         # Angular 17 — Standalone Components
-    ├── package.json
-    └── src/app/
-        ├── services/      # → À implémenter (TODO)
-        ├── pages/         # → À implémenter (TODO)
-        └── models/        # Interfaces TypeScript (fournies)
-```
+## Repository Structure
 
-### Démarrage rapide
+test-technique-fullstack/
+ backend/            # Spring Boot REST API providing pricing logic and data persistence
+ frontend/           # Angular 17 SPA providing the user administration interface
+ README.md           # Global project documentation
+ ...
+\
+## Getting Started
+### Prerequisites
+- Java 17 or higher
+- Node.js (v18+)
+- Maven 3.8+
+- Angular CLI
 
-**Backend :**
+### Running the Full Stack
+
+To start the entire application, you will need to open two separate terminal windows from the root of the project (`test-technique-fullstack/`).
+
+**Terminal 1 (Backend - Spring Boot):**
 ```bash
 cd backend
+mvn clean install
 mvn spring-boot:run
-# API disponible sur http://localhost:8080
-# Console H2 : http://localhost:8080/h2-console (JDBC URL: jdbc:h2:mem:testdb)
 ```
+*The backend API will start on http://localhost:8080*
 
-**Frontend :**
+**Terminal 2 (Frontend - Angular):**
 ```bash
 cd frontend
 npm install
 ng serve
-# App disponible sur http://localhost:4200
 ```
+*The frontend app will be accessible at http://localhost:4200*
 
-### Formule de tarification
+## 📸 Screenshots
 
-```
-Prix Final = Taux de Base × Facteur Âge × Coefficient Zone
-```
+Here is a glimpse of the application's frontend interfaces:
 
-| Tranche d'âge | Catégorie | Facteur |
-|---------------|-----------|---------|
-| 18 - 24 ans   | YOUNG     | 1.30    |
-| 25 - 45 ans   | ADULT     | 1.00    |
-| 46 - 65 ans   | SENIOR    | 1.20    |
-| 66 - 99 ans   | ELDERLY   | 1.50    |
+### Products Management
+**Product List**  
+![Product List](./frontend/assets/list-product.png)
 
-| Zone        | Code | Coefficient |
-|-------------|------|-------------|
-| Grand Tunis | TUN  | 1.20        |
-| Sfax        | SFX  | 1.00        |
-| Sousse      | SOU  | 1.10        |
+**Create Product**  
+![Create Product](./frontend/assets/create-product.png)
 
-| Produit              | Code    | Taux de Base (TND) |
-|----------------------|---------|---------------------|
-| Assurance Auto       | AUTO    | 500.00              |
-| Assurance Habitation | HABITAT | 300.00              |
-| Assurance Santé      | SANTE   | 800.00              |
+**Product Details**  
+![Product Details](./frontend/assets/details_product.png)
 
-**Exemple :** Client de 30 ans, zone Tunis, Assurance Auto = 500 × 1.00 × 1.20 = **600.00 TND**
+### Quotes Management
+**Quote List**  
+![Quote List](./frontend/assets/list-quote.png)
 
-### Livrable attendu
+**Create Quote**  
+![Create Quote](./frontend/assets/screenshot-create-quote.png)
 
-- Code complété (tous les fichiers `TODO`)
-- Minimum 5 tests unitaires backend
-- README mis à jour avec vos choix techniques
-- Commits Git progressifs et clairs
+**Quote Details**  
+![Quote Details](./frontend/assets/screenshot-details-quote.png)
 
-<<<<<<< HEAD
-Bonne chance !
-=======
-### Deadline
+## Architecture Overview
+The system follows a standard Client-Server architecture. The Angular frontend communicates with the Spring Boot backend via a RESTful API using JSON payloads.
+- **Frontend:** Handles client validation, data formatting, and routing.
+- **Backend:** Evaluates pricing logic, stores products/rules/quotes, and generates PDF byte streams.
+- **Database:** H2 relational database populated dynamically via schema.sql and data.sql.
 
-**Samedi 11 avril 2026 à 23h59**
+## API Overview
+- /api/quotes: Calculate quotes, retrieve history, generate PDFs.
+- /api/products: Manage insurance products and complex demographic pricing factors.
 
-Envoyez le lien de votre repository à : **recrutement.tn@tendanz.com**
->>>>>>> df8eb3a (Fix skeleton: corrected data.sql, real TODOs, frontend models, added ProductController)
+Please see the [Backend README](./backend/README.md) and [Frontend README](./frontend/README.md) for deeper technical references.

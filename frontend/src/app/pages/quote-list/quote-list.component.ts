@@ -202,4 +202,43 @@ export class QuoteListComponent implements OnInit, OnDestroy {
   viewQuote(id: number): void {
     this.router.navigate(['/quotes', id]);
   }
+
+  /**
+   * Download a quote PDF
+   */
+  downloadPdf(id: number, event: Event): void {
+    event.stopPropagation();
+    this.quoteService.getQuotePdf(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (blob: Blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `quote-${id}.pdf`;
+          link.click();
+          window.URL.revokeObjectURL(url);
+        },
+        error: (err) => {
+          console.error('Failed to download PDF', err);
+          alert('Could not download PDF. Server might be missing the file.');
+        }
+      });
+  }
+
+  /**
+   * Route to Edit Component
+   */
+  editQuote(id: number, event: Event): void {
+    event.stopPropagation();
+    this.router.navigate(['/quotes', id, 'edit']);
+  }
+
+  /**
+   * Route to History Component
+   */
+  viewHistory(id: number, event: Event): void {
+    event.stopPropagation();
+    this.router.navigate(['/quotes', id, 'history']);
+  }
 }

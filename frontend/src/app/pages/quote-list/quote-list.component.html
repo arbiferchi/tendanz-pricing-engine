@@ -64,6 +64,7 @@
           <th>Zone</th>
           <th>Final Price (TND)</th>
           <th>Created Date</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -74,6 +75,11 @@
           <td>{{ quote.zoneName }}</td>
           <td class="price">{{ quote.finalPrice | number:'1.2-2' }}</td>
           <td>{{ quote.createdAt | date:'medium' }}</td>
+          <td class="actions-cell">
+            <button class="action-btn download-btn" (click)="downloadPdf(quote.quoteId, $event)" title="Download PDF of the exact quote pricing configuration.">⇓ PDF</button>
+            <button class="action-btn edit-btn" (click)="editQuote(quote.quoteId, $event)" title="Correct client properties or remap pricing evaluations.">✎ Edit</button>
+            <button class="action-btn history-btn" (click)="viewHistory(quote.quoteId, $event)" title="Review timestamps and price deltas of modification updates.">↺ Hist</button>
+          </td>
         </tr>
       </tbody>
     </table>

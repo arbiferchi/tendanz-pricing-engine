@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
-
+import com.tendanz.pricing.exception.PdfGenerationException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -114,6 +114,25 @@ public class GlobalExceptionHandler {
         response.put("message", "The requested endpoint does not exist.");
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    /**
+     * Handle PDF Generation Exceptions.
+     *
+     * @param ex the pdf generation exception
+     * @return error response for PDF failures
+     */
+    @ExceptionHandler(PdfGenerationException.class)
+    public ResponseEntity<Map<String, Object>> handlePdfGenerationException(PdfGenerationException ex) {
+        log.error("PDF Generation failed: {}", ex.getMessage());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        response.put("error", "PDF Generation Error");
+        response.put("message", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 
     /**

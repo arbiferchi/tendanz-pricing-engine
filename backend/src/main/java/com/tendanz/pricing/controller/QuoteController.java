@@ -3,11 +3,14 @@ package com.tendanz.pricing.controller;
 import com.tendanz.pricing.dto.QuoteRequest;
 import com.tendanz.pricing.dto.QuoteResponse;
 import com.tendanz.pricing.service.PricingService;
+import com.tendanz.pricing.service.PdfService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +34,7 @@ import java.util.List;
 public class QuoteController {
 
     private final PricingService pricingService;
+    private final PdfService pdfService;
 
     /**
      * Create a new quote based on the provided request parameters.
@@ -108,5 +112,27 @@ public class QuoteController {
         
         log.info("Successfully retrieved {} quotes matching the criteria", responses.size());
         return ResponseEntity.ok(responses);
+    }
+
+    /**
+     * Download a quote representation as a PDF document.
+     *
+     * @param id the unique identifier of the quote
+     * @return ResponseEntity with PDF byte array and headers for download
+     */
+    @GetMapping("/{id}/pdf")
+    public ResponseEntity<byte[]> getQuotePdf(
+            @PathVariable
+            @Positive(message = "Quote ID must be a positive integer") Long id) {
+        log.info("Received request to generate PDF for quote ID: {}", id);
+
+        QuoteResponse quote = pricingService.getQuote(id);
+        byte[] pdfBytes = pdfService.generateQuotePdf(quote);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "quote_" + id + ".pdf");
+        
+        return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
     }
 }

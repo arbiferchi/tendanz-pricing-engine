@@ -1,20 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-import { Product } from '../models/product.model';
+import { Product, PaginatedProductResponse, ProductCreationRequest } from '../models/product.model';
 
 /**
- * Service for managing products (insurance products)
- *
- * TODO: Candidate must implement the following method:
- * - getProducts(): Observable<Product[]>
- *
- * Requirements:
- * - Use HttpClient for HTTP requests
- * - Use catchError operator to handle errors
- * - Base URL should be configurable via environment.apiUrl
+ * Service for managing products (insurance products).
+ * Handles API communication related to product catalog rendering and modifications.
  */
 @Injectable({
   providedIn: 'root'
@@ -26,31 +19,72 @@ export class ProductService {
   constructor(private http: HttpClient) {}
 
   /**
-   * Get all available products
-   * GET /api/products
+   * Retrieves all available products, unpacking pagination mapping.
    *
-   * @returns Observable of array of products
-   *
-   * TODO: Implement this method
-   * - GET from ${this.apiUrl}${this.endpoint}
-   * - Handle errors with catchError
+   * @returns Observable array of mapping products ready for display.
    */
   getProducts(): Observable<Product[]> {
-    // TODO: GET from ${this.apiUrl}${this.endpoint}
-    // TODO: Handle errors with catchError
-    throw new Error('Method not implemented');
+    return this.http.get<PaginatedProductResponse | Product[]>(`${this.apiUrl}${this.endpoint}`).pipe(
+      map(response => {
+        // Unpack backend paginated instances intelligently.
+        if ('content' in response) {
+          return response.content;
+        }
+        return response;
+      }),
+      catchError(error => this.handleError(error, 'load products'))
+    );
   }
 
   /**
-   * Handle HTTP errors
-   *
-   * @param error The error object from HttpClient
-   * @returns Observable that throws a user-friendly error message
-   *
-   * TODO: Implement error handling if needed
+   * Recovers a single specific product by its unique ID.
+   * 
+   * @param id The requested product identifier.
+   * @returns The targeted object populated.
    */
-  private handleError(error: any): Observable<never> {
-    console.error('Product service error:', error);
-    return throwError(() => new Error('Failed to load products'));
+  getProductById(id: number): Observable<Product> {
+    return this.http.get<Product>(`${this.apiUrl}${this.endpoint}/${id}`).pipe(
+      catchError(error => this.handleError(error, 'load product details'))
+    );
+  }
+
+  /**
+   * Creates a new dynamic product tracking rules globally payload binding.
+   * 
+   * @param request Data to form base rate rules alongside definition.
+   * @returns Emits the success instance returned mapping ID directly.
+   */
+  createProduct(request: ProductCreationRequest): Observable<Product> {
+    return this.http.post<Product>(`${this.apiUrl}${this.endpoint}`, request).pipe(
+      catchError(error => this.handleError(error, 'create product'))
+    );
+  }
+
+  /**
+   * Updates an existing product alongside mapping rules.
+   * 
+   * @param id ID to modify uniquely.
+   * @param request Data properties overriding the core definitions.
+   */
+  updateProduct(id: number, request: ProductCreationRequest): Observable<Product> {
+    return this.http.put<Product>(`${this.apiUrl}${this.endpoint}/${id}`, request).pipe(
+      catchError(error => this.handleError(error, 'update product'))
+    );
+  }
+
+  /**
+   * Uniformly manages formatting user-friendly HTTP client error displays.
+   */
+  private handleError(error: any, context: string): Observable<never> {
+    console.error(`Product service error during [${context}]:`, error);
+    let errorMessage = `Failed to ${context}`;
+    
+    if (error.error instanceof ErrorEvent) {
+      errorMessage = `Client error: ${error.error.message}`;
+    } else if (error.status) {
+      errorMessage = error.error?.message || `Server returned error (${error.status}): ${error.message}`;
+    }
+    
+    return throwError(() => new Error(errorMessage));
   }
 }

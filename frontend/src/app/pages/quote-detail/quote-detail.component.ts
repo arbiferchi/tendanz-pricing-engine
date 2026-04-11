@@ -1,25 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, ActivatedRoute } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { QuoteService } from '../../services/quote.service';
 import { QuoteResponse } from '../../models/quote.model';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 /**
  * Component for displaying the details of a single quote
- *
- * TODO: Candidate must implement the following:
- * 1. Get quote ID from route parameters (hint: this.route.snapshot.paramMap.get('id'))
- *
- * 2. Load quote details from QuoteService.getQuote(id)
- *
- * 3. Display complete quote information:
- *    - Client details (name, age)
- *    - Insurance details (product, zone)
- *    - Pricing breakdown (base price, applied rules, final price)
- *
- * 4. Handle loading state while fetching data
- *
- * 5. Handle error state if quote cannot be loaded
  */
 @Component({
   selector: 'app-quote-detail',
@@ -28,20 +16,54 @@ import { QuoteResponse } from '../../models/quote.model';
   templateUrl: './quote-detail.component.html',
   styleUrl: './quote-detail.component.css'
 })
-export class QuoteDetailComponent implements OnInit {
+export class QuoteDetailComponent implements OnInit, OnDestroy {
   quote: QuoteResponse | null = null;
   loading = false;
   errorMessage: string | null = null;
+  
+  private destroy$ = new Subject<void>();
 
   constructor(
     private quoteService: QuoteService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
-    // TODO: Get quote ID from route parameters
-    // TODO: Load quote from QuoteService
-    // TODO: Handle loading and error states
-    console.log('Quote detail component initialized (TODO: implement)');
+    const idParam = this.route.snapshot.paramMap.get('id');
+    if (idParam) {
+      const id = parseInt(idParam, 10);
+      if (!isNaN(id)) {
+        this.loadQuote(id);
+      } else {
+        this.errorMessage = 'Identifiant du devis invalide.';
+      }
+    } else {
+      this.errorMessage = 'Aucun identifiant de devis fourni.';
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private loadQuote(id: number): void {
+    this.loading = true;
+    this.errorMessage = null;
+
+    this.quoteService.getQuote(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.quote = data;
+          this.loading = false;
+        },
+        error: (err) => {
+          console.error('Error fetching quote:', err);
+          this.errorMessage = 'Erreur lors du chargement du devis. Veuillez réessayer plus tard.';
+          this.loading = false;
+        }
+      });
   }
 }

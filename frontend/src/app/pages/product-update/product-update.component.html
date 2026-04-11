@@ -1,0 +1,80 @@
+<div class="product-form-container">
+  <div class="header">
+    <h2>Update Product Configurations</h2>
+  </div>
+
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+  </div>
+
+  <div *ngIf="successMessage" class="alert success" style="background: #d4edda; color: #155724; padding: var(--spacing-md); border-radius: var(--border-radius-md); margin-bottom: var(--spacing-lg);">
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading"></div>
+    <p>Loading product details...</p>
+  </div>
+
+  <form *ngIf="!isLoading && !error" [formGroup]="productForm" (ngSubmit)="onSubmit()" class="form">
+    <div class="form-group">
+      <label for="name">Product Name *</label>
+      <input type="text" id="name" formControlName="name" placeholder="e.g. Life Insurance" [class.invalid]="isFieldInvalid('name')" />
+      <div class="form-error" *ngIf="isFieldInvalid('name')">
+        Valid product name between 2 and 100 characters is required.
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="description">Description (Optional)</label>
+      <textarea id="description" formControlName="description" placeholder="Brief description..." rows="3" [class.invalid]="isFieldInvalid('description')"></textarea>
+      <div class="form-error" *ngIf="isFieldInvalid('description')">
+        Description cannot exceed 500 characters.
+      </div>
+    </div>
+
+    <div class="form-section-title">Pricing Base Rules</div>
+
+    <div class="form-group">
+      <label for="baseRate">Global Base Rate *</label>
+      <input type="number" id="baseRate" formControlName="baseRate" step="0.01" min="0.01" placeholder="e.g. 100.00" [class.invalid]="isFieldInvalid('baseRate')" />
+      <div class="form-error" *ngIf="isFieldInvalid('baseRate')">
+        Base rate must be greater than zero.
+      </div>
+    </div>
+
+    <div class="grid-2-col">
+      <div class="form-group">
+        <label for="ageFactorYoung">Age Factor (Young: < 25) *</label>
+        <input type="number" id="ageFactorYoung" formControlName="ageFactorYoung" step="0.01" min="0.01" placeholder="e.g. 1.5" [class.invalid]="isFieldInvalid('ageFactorYoung')" />
+        <div class="form-error" *ngIf="isFieldInvalid('ageFactorYoung')">Required</div>
+      </div>
+
+      <div class="form-group">
+        <label for="ageFactorAdult">Age Factor (Adult: 25-45) *</label>
+        <input type="number" id="ageFactorAdult" formControlName="ageFactorAdult" step="0.01" min="0.01" placeholder="e.g. 1.0" [class.invalid]="isFieldInvalid('ageFactorAdult')" />
+        <div class="form-error" *ngIf="isFieldInvalid('ageFactorAdult')">Required</div>
+      </div>
+
+      <div class="form-group">
+        <label for="ageFactorSenior">Age Factor (Senior: 46-65) *</label>
+        <input type="number" id="ageFactorSenior" formControlName="ageFactorSenior" step="0.01" min="0.01" placeholder="e.g. 1.2" [class.invalid]="isFieldInvalid('ageFactorSenior')" />
+        <div class="form-error" *ngIf="isFieldInvalid('ageFactorSenior')">Required</div>
+      </div>
+
+      <div class="form-group">
+        <label for="ageFactorElderly">Age Factor (Elderly: > 65) *</label>
+        <input type="number" id="ageFactorElderly" formControlName="ageFactorElderly" step="0.01" min="0.01" placeholder="e.g. 2.0" [class.invalid]="isFieldInvalid('ageFactorElderly')" />
+        <div class="form-error" *ngIf="isFieldInvalid('ageFactorElderly')">Required</div>
+      </div>
+    </div>
+
+    <div class="form-actions" style="display: flex; gap: var(--spacing-md);">
+      <button type="button" class="secondary" routerLink="/products">Cancel</button>
+      <button type="submit" class="primary" [disabled]="isSubmitting || successMessage">
+        <span *ngIf="isSubmitting" class="loading"></span>
+        <span *ngIf="!isSubmitting">Update Config</span>
+      </button>
+    </div>
+  </form>
+</div>

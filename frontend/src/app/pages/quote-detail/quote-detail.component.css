@@ -13,7 +13,7 @@
 .loading {
   width: 40px;
   height: 40px;
-  border: 4px solid var(--secondary-color);
+  border: 4px solid var(--border-color);
   border-top-color: var(--primary-color);
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
@@ -28,13 +28,14 @@
 
 .quote-detail {
   max-width: 1200px;
+  margin: 0 auto;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
   padding-bottom: var(--spacing-lg);
   border-bottom: 2px solid var(--border-color);
 }
@@ -42,43 +43,52 @@
 .header h2 {
   color: var(--primary-color);
   margin: 0;
-  font-size: 1.75rem;
+  font-size: 2rem;
+  font-weight: 600;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-lg);
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
 }
 
 .card {
   background: white;
   border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
-  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-xl);
   box-shadow: var(--shadow);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
 }
 
 .card h3 {
   color: var(--primary-color);
   margin-top: 0;
-  margin-bottom: var(--spacing-md);
-  font-size: 1.2rem;
+  margin-bottom: var(--spacing-lg);
+  font-size: 1.4rem;
+  border-bottom: 2px solid var(--background-color);
+  padding-bottom: var(--spacing-sm);
 }
 
 .card h4 {
   color: var(--primary-color);
-  margin-top: var(--spacing-md);
-  margin-bottom: var(--spacing-sm);
-  font-size: 1rem;
+  margin-top: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  font-size: 1.1rem;
 }
 
 .detail-item {
   display: flex;
   justify-content: space-between;
-  padding: var(--spacing-sm) 0;
-  border-bottom: 1px solid var(--secondary-color);
+  padding: var(--spacing-md) 0;
+  border-bottom: 1px solid var(--background-color);
 }
 
 .detail-item:last-child {
@@ -86,17 +96,49 @@
 }
 
 .detail-item .label {
-  font-weight: 500;
-  color: var(--text-light);
+  font-weight: 600;
+  color: var(--text-color);
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
 }
 
 .detail-item .value {
-  color: var(--text-color);
+  color: var(--primary-color);
+  font-weight: 500;
   text-align: right;
 }
 
 .pricing-card {
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+.pricing-card .total-price {
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-xl);
+  border-top: 2px solid var(--background-color);
+  font-size: 1.5rem;
+}
+
+.pricing-card .total-price .label {
+  color: var(--primary-color);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.pricing-card .total-price .value {
+  color: var(--accent-color);
+  font-weight: 800;
+  font-size: 2rem;
+}
+
+.actions {
+  display: flex;
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-xl);
+  border-top: 2px solid var(--border-color);
 }
 
 .rules-section {

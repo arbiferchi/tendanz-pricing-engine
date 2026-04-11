@@ -7,6 +7,7 @@ import { QuoteHistoryComponent } from './pages/quote-history/quote-history.compo
 import { ProductFormComponent } from './pages/product-form/product-form.component';
 import { ProductListComponent } from './pages/product-list/product-list.component';
 import { ProductUpdateComponent } from './pages/product-update/product-update.component';
+import { ProductDetailComponent } from './pages/product-detail/product-detail.component';
 
 export const routes: Routes = [
   {
@@ -41,6 +42,10 @@ export const routes: Routes = [
   {
     path: 'products/new',
     component: ProductFormComponent
+  },
+  {
+    path: 'products/:id',
+    component: ProductDetailComponent
   },
   {
     path: 'products/:id/edit',

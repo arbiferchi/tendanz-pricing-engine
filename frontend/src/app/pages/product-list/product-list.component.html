@@ -20,7 +20,7 @@
           <th>ID</th>
           <th>Name</th>
           <th>Description</th>
-          <th>Base Rate</th>
+          <th>Base Rate (TND)</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -29,9 +29,10 @@
           <td>#{{ product.id }}</td>
           <td><strong>{{ product.name }}</strong></td>
           <td class="text-muted">{{ product.description || 'N/A' }}</td>
-          <td>{{ product.baseRate ? (product.baseRate | currency:'EUR') : 'N/A' }}</td>
+          <td>{{ product.baseRate ? (product.baseRate | number:'1.2-2' ) : 'N/A' }}</td>
           <td class="actions-cell">
-            <a [routerLink]="['/products', product.id, 'edit']" class="button secondary small">Edit Rules</a>
+            <a [routerLink]="['/products', product.id]" class="action-btn view-btn" title="View details">👁 View</a>
+            <a [routerLink]="['/products', product.id, 'edit']" class="action-btn edit-btn" title="Edit rules">✎ Edit</a>
           </td>
         </tr>
         <tr *ngIf="products.length === 0">

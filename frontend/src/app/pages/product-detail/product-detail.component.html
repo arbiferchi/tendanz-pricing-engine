@@ -1,0 +1,80 @@
+<div class="product-detail-container">
+  <header class="page-header">
+    <div class="header-content">
+      <h1>Product Details</h1>
+      <p class="subtitle" *ngIf="product">Viewing details for product #{{ product.id }}</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" routerLink="/products">
+        ← Back to Products
+      </button>
+      <button class="btn btn-primary" *ngIf="product" [routerLink]="['/products/edit', product.id]">
+        Edit Product
+      </button>
+    </div>
+  </header>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading product details...</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="alert alert-error" *ngIf="errorMessage && !loading">
+    <strong>Error!</strong> {{ errorMessage }}
+  </div>
+
+  <!-- Content State -->
+  <div class="content fade-in" *ngIf="product && !loading">
+    
+    <div class="cards-grid">
+      <!-- Main Info Card -->
+      <div class="card info-card">
+        <div class="card-header">
+          <h2>Product Information</h2>
+        </div>
+        <div class="card-body">
+          <div class="detail-row">
+            <span class="detail-label">Name</span>
+            <span class="detail-value highlight">{{ product.name }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Description</span>
+            <span class="detail-value">{{ product.description || 'N/A' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Base Rate</span>
+            <span class="detail-value price">{{ product.baseRate | number:'1.2-2' }} TND</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings / Rules Card -->
+      <div class="card rules-card">
+        <div class="card-header">
+          <h2>Age Factors</h2>
+        </div>
+        <div class="card-body">
+          <div class="detail-row">
+            <span class="detail-label">Young (< 25)</span>
+            <span class="detail-value badge badge-neutral">x{{ product.ageFactorYoung || '1.0' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Adult (25 - 45)</span>
+            <span class="detail-value badge badge-neutral">x{{ product.ageFactorAdult || '1.0' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Senior (46 - 65)</span>
+            <span class="detail-value badge badge-neutral">x{{ product.ageFactorSenior || '1.0' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Elderly (> 65)</span>
+            <span class="detail-value badge badge-neutral">x{{ product.ageFactorElderly || '1.0' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</div>

@@ -27,7 +27,32 @@
 .actions-cell {
   white-space: nowrap;
   width: 1%;
+  display: flex;
+  gap: 6px;
 }
+
+.action-btn {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: var(--secondary-color);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.view-btn { color: #805ADC; border-color: #D6BCFA; background-color: #FAF5FF; }
+.view-btn:hover:not(:disabled) { background-color: #805ADC; color: white; border-color: #805ADC; }
+
+.edit-btn { color: #3182CE; border-color: #BEE3F8; background-color: #EBF8FF; }
+.edit-btn:hover:not(:disabled) { background-color: #3182CE; color: white; border-color: #3182CE; }
+
+.history-btn { color: #38A169; border-color: #C6F6D5; background-color: #F0FFF4; }
+.history-btn:hover:not(:disabled) { background-color: #38A169; color: white; border-color: #38A169; }
 
 .text-muted {
   color: var(--text-light);

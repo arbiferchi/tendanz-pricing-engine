@@ -1,10 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { QuoteService } from '../../services/quote.service';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
+import { QuoteRequest } from '../../models/quote.model';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 /**
  * Available zones with their codes (must match backend data.sql)
@@ -17,18 +20,6 @@ const ZONES = [
 
 /**
  * Component for creating a new quote
- *
- * TODO: Candidate must implement the following:
- * 1. Load products from ProductService on init and populate the product dropdown
- *
- * 2. Implement form submission in onSubmit():
- *    - Validate form before submission
- *    - Build a QuoteRequest from form values
- *    - Call QuoteService.createQuote()
- *    - Show success/error message
- *    - Navigate to quote detail page on success
- *
- * 3. Handle loading state while API request is in progress
  */
 @Component({
   selector: 'app-quote-form',
@@ -37,14 +28,17 @@ const ZONES = [
   templateUrl: './quote-form.component.html',
   styleUrl: './quote-form.component.css'
 })
-export class QuoteFormComponent implements OnInit {
+export class QuoteFormComponent implements OnInit, OnDestroy {
   form: FormGroup;
   products: Product[] = [];
   zones = ZONES;
   loading = false;
   submitted = false;
+  loadingProducts = false;
   errorMessage: string | null = null;
   successMessage: string | null = null;
+  
+  private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
@@ -61,27 +55,75 @@ export class QuoteFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // TODO: Load products from ProductService
-    // TODO: Populate this.products array
-    // TODO: Handle loading and error states
+    this.loadProducts();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /**
-   * Submit the form
-   *
-   * TODO: Implement form submission
-   * - Check if form is valid (mark all fields as touched if invalid)
-   * - Set loading state
-   * - Build QuoteRequest: { productId: number, zoneCode: string, clientName: string, clientAge: number }
-   * - Call quoteService.createQuote(request)
-   * - On success: show message, navigate to /quotes/{quoteId}
-   * - On error: show error message
-   * - Always reset loading state
+   * Fetches available products from the backend API to populate the product dropdown.
+   */
+  private loadProducts(): void {
+    this.loadingProducts = true;
+    this.errorMessage = null;
+
+    this.productService.getProducts()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data: Product[]) => {
+          this.products = data;
+          this.loadingProducts = false;
+        },
+        error: (error) => {
+          this.errorMessage = 'Failed to load products. Please refresh the page.';
+          this.loadingProducts = false;
+          console.error(error);
+        }
+      });
+  }
+
+  /**
+   * Submit the form to generate a new quote.
    */
   onSubmit(): void {
     this.submitted = true;
-    // TODO: Implement form submission
-    console.log('Form submitted (TODO: implement)');
+    this.errorMessage = null;
+    this.successMessage = null;
+
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    this.loading = true;
+
+    const request: QuoteRequest = {
+      productId: Number(this.form.value.productId),
+      zoneCode: this.form.value.zoneCode,
+      clientName: this.form.value.clientName,
+      clientAge: Number(this.form.value.clientAge)
+    };
+
+    this.quoteService.createQuote(request)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.loading = false;
+          this.successMessage = 'Quote successfully created!';
+          
+          // Navigate to the quote details page after successful creation
+          setTimeout(() => {
+             this.router.navigate(['/quotes', response.quoteId]);
+          }, 1000);
+        },
+        error: (error) => {
+          this.loading = false;
+          this.errorMessage = error.message || 'Failed to create quote. Please check your inputs.';
+        }
+      });
   }
 
   /**

@@ -10,4 +10,12 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
+    
+    /**
+     * Checks if a product with the given name already exists.
+     * 
+     * @param name The name to check.
+     * @return true if exists, false otherwise.
+     */
+    boolean existsByName(String name);
 }

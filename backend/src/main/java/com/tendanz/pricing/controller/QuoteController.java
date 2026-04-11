@@ -16,6 +16,11 @@ import org.springframework.web.bind.annotation.*;
 
 import com.tendanz.pricing.exception.ResourceNotFoundException;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+
 import java.util.List;
 
 /**
@@ -90,27 +95,29 @@ public class QuoteController {
     }
 
     /**
-     * Get all quotes with optional filters.
+     * Get all quotes with optional filters and pagination.
      *
-     * This endpoint retrieves quotes from the system optionally filtering by product ID 
+     * This endpoint retrieves paginated quotes from the system optionally filtering by product ID
      * and/or a minimum final price.
      *
      * @param productId optional product ID filter
      * @param minPrice optional minimum price filter
-     * @return list of quotes matching the criteria wrapped in an HTTP 200 OK status
+     * @param pageable pagination parameters (e.g. page=0&size=10&sort=createdAt,desc)
+     * @return page of quotes matching the criteria wrapped in an HTTP 200 OK status
      */
     @GetMapping
-    public ResponseEntity<List<QuoteResponse>> getAllQuotes(
+    public ResponseEntity<Page<QuoteResponse>> getAllQuotes(
             @RequestParam(required = false) 
             @Positive(message = "Product ID must be a positive integer") Long productId,
-            @RequestParam(required = false) 
-            @Positive(message = "Minimum price must be a positive value") Double minPrice) {
-        
-        log.info("Received request to fetch quotes with filters - ProductId: {}, MinPrice: {}", productId, minPrice);
-        
-        List<QuoteResponse> responses = pricingService.getAllQuotes(productId, minPrice);
-        
-        log.info("Successfully retrieved {} quotes matching the criteria", responses.size());
+            @RequestParam(required = false)
+            @Positive(message = "Minimum price must be a positive value") Double minPrice,
+            @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        log.info("Received request to fetch quotes with filters - ProductId: {}, MinPrice: {}, Page: {}", productId, minPrice, pageable.getPageNumber());
+
+        Page<QuoteResponse> responses = pricingService.getAllQuotes(productId, minPrice, pageable);
+
+        log.info("Successfully retrieved a page of {} quotes matching the criteria", responses.getNumberOfElements());
         return ResponseEntity.ok(responses);
     }
 

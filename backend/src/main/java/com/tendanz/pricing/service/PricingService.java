@@ -14,6 +14,8 @@ import com.tendanz.pricing.repository.ZoneRepository;
 import com.tendanz.pricing.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
@@ -232,34 +234,33 @@ public class PricingService {
     }
 
     /**
-     * Retrieves all quotes based on optional filtering criteria.
+     * Retrieves all quotes based on optional filtering criteria with pagination.
      * Supports filtering by product ID and/or a minimum final price.
      *
      * @param productId an optional product ID to filter the quotes.
      * @param minPrice an optional minimum final price to filter the quotes.
-     * @return a list of quote responses matching the given criteria.
+     * @param pageable pagination configuration.
+     * @return a page of quote responses matching the given criteria.
      */
-    public List<QuoteResponse> getAllQuotes(Long productId, Double minPrice) {
+    public Page<QuoteResponse> getAllQuotes(Long productId, Double minPrice, Pageable pageable) {
         
-        log.info("Fetching quotes with filters - productId: {}, minPrice: {}", productId, minPrice);
+        log.info("Fetching quotes with filters - productId: {}, minPrice: {}, page: {}", productId, minPrice, pageable.getPageNumber());
         
-        List<Quote> quotes;
+        Page<Quote> quotes;
 
         if (productId != null && minPrice != null) {
-            quotes = quoteRepository.findByProductIdAndFinalPriceGreaterThanEqual(productId, BigDecimal.valueOf(minPrice));
+            quotes = quoteRepository.findByProductIdAndFinalPriceGreaterThanEqual(productId, BigDecimal.valueOf(minPrice), pageable);
         } else if (productId != null) {
-            quotes = quoteRepository.findByProductId(productId);
+            quotes = quoteRepository.findByProductId(productId, pageable);
         } else if (minPrice != null) {
-            quotes = quoteRepository.findByFinalPriceGreaterThanEqual(BigDecimal.valueOf(minPrice));
+            quotes = quoteRepository.findByFinalPriceGreaterThanEqual(BigDecimal.valueOf(minPrice), pageable);
         } else {
-            quotes = quoteRepository.findAll();
+            quotes = quoteRepository.findAll(pageable);
         }
 
-        return quotes.stream()
-                .map(quote -> {
-                    List<String> rules = deserializeRules(quote.getAppliedRules());
-                    return mapToResponse(quote, rules);
-                })
-                .toList();
+        return quotes.map(quote -> {
+            List<String> rules = deserializeRules(quote.getAppliedRules());
+            return mapToResponse(quote, rules);
+        });
     }
 }

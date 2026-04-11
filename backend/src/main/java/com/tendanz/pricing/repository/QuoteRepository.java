@@ -1,6 +1,8 @@
 package com.tendanz.pricing.repository;
 
 import com.tendanz.pricing.entity.Quote;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,30 +26,32 @@ public interface QuoteRepository extends JpaRepository<Quote, Long> {
     List<Quote> findByClientName(String clientName);
     
     /**
-     * Retrieves all quotes associated with a specific product ID.
+     * Retrieves all quotes associated with a specific product ID with pagination.
      *
      * @param productId The ID of the product.
-     * @return A list of quotes for the specified product.
+     * @param pageable Pagination configuration.
+     * @return A page of quotes for the specified product.
      */
-    List<Quote> findByProductId(Long productId);
+    Page<Quote> findByProductId(Long productId, Pageable pageable);
 
     /**
-     * Retrieves all quotes where the final price is greater than or equal to the predefined threshold.
+     * Retrieves all quotes where the final price is greater than or equal to the predefined threshold with pagination.
      *
      * @param minPrice The minimum final price (inclusive).
-     * @return A list of quotes matching the condition, ordered by price descending.
+     * @param pageable Pagination configuration.
+     * @return A page of quotes matching the condition, ordered by price descending.
      */
     @Query("SELECT q FROM Quote q WHERE q.finalPrice >= :minPrice ORDER BY q.finalPrice DESC")
-    List<Quote> findQuotesAboveThreshold(@Param("minPrice") BigDecimal minPrice);
+    Page<Quote> findQuotesAboveThreshold(@Param("minPrice") BigDecimal minPrice, Pageable pageable);
 
     /**
-     * Retrieves all quotes where the final price is greater than or equal to the predefined threshold.
+     * Retrieves all quotes where the final price is greater than or equal to the predefined threshold with pagination.
      */
-    List<Quote> findByFinalPriceGreaterThanEqual(BigDecimal minPrice);
+    Page<Quote> findByFinalPriceGreaterThanEqual(BigDecimal minPrice, Pageable pageable);
 
     /**
-     * Retrieves all quotes for a specific product and with a final price greater than or equal to the threshold.
+     * Retrieves all quotes for a specific product and with a final price greater than or equal to the threshold with pagination.
      */
-    List<Quote> findByProductIdAndFinalPriceGreaterThanEqual(Long productId, BigDecimal minPrice);
+    Page<Quote> findByProductIdAndFinalPriceGreaterThanEqual(Long productId, BigDecimal minPrice, Pageable pageable);
 
 }

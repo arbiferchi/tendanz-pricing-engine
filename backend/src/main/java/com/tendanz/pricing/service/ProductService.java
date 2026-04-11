@@ -101,6 +101,10 @@ public class ProductService {
                 .name(savedProduct.getName())
                 .description(savedProduct.getDescription())
                 .baseRate(savedRule.getBaseRate())
+                .ageFactorYoung(savedRule.getAgeFactorYoung())
+                .ageFactorAdult(savedRule.getAgeFactorAdult())
+                .ageFactorSenior(savedRule.getAgeFactorSenior())
+                .ageFactorElderly(savedRule.getAgeFactorElderly())
                 .build();
     }
 
@@ -159,6 +163,10 @@ public class ProductService {
                 .name(product.getName())
                 .description(product.getDescription())
                 .baseRate(rule.getBaseRate())
+                .ageFactorYoung(rule.getAgeFactorYoung())
+                .ageFactorAdult(rule.getAgeFactorAdult())
+                .ageFactorSenior(rule.getAgeFactorSenior())
+                .ageFactorElderly(rule.getAgeFactorElderly())
                 .build();
     }
 }

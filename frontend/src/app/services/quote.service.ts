@@ -59,7 +59,7 @@ export class QuoteService {
    * 
    * @param filters Supports dynamic sorting across product categorizations and financial thresholds.
    */
-  getQuotes(filters?: { productId?: number; minPrice?: number }): Observable<QuoteResponse[]> {
+  getQuotes(filters?: { productId?: number; minPrice?: number; page?: number; size?: number }): Observable<PaginatedQuoteResponse> {
     let params = new HttpParams();
     
     if (filters) {
@@ -69,16 +69,15 @@ export class QuoteService {
       if (filters.minPrice != null) {
         params = params.set('minPrice', filters.minPrice.toString());
       }
+      if (filters.page != null) {
+        params = params.set('page', filters.page.toString());
+      }
+      if (filters.size != null) {
+        params = params.set('size', filters.size.toString());
+      }
     }
     
-    return this.http.get<PaginatedQuoteResponse | QuoteResponse[]>(`${this.apiUrl}${this.endpoint}`, { params }).pipe(
-      map(response => {
-        // Fallback for Paginated structure parsing transparent map injection
-        if (response && 'content' in response) {
-          return response.content;
-        }
-        return response as QuoteResponse[];
-      }),
+    return this.http.get<PaginatedQuoteResponse>(`${this.apiUrl}${this.endpoint}`, { params }).pipe(
       catchError(error => this.handleError(error, 'fetch quotes list'))
     );
   }

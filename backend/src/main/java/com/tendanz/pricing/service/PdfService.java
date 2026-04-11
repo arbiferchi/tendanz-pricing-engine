@@ -84,10 +84,10 @@ public class PdfService {
             priceTable.setWidthPercentage(100);
             priceTable.setSpacingAfter(20);
 
-            addTableRow(priceTable, "Tarif de Base :", quote.getBasePrice() + " €", normalFont, tableHeaderFont);
+            addTableRow(priceTable, "Tarif de Base :", quote.getBasePrice() + " TND", normalFont, tableHeaderFont);
             
             Font totalFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14, Color.BLUE);
-            addTableRow(priceTable, "Prix Final :", quote.getFinalPrice() + " €", totalFont, tableHeaderFont);
+            addTableRow(priceTable, "Prix Final :", quote.getFinalPrice() + " TND", totalFont, tableHeaderFont);
             
             document.add(priceTable);
 

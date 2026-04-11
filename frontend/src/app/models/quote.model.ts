@@ -24,3 +24,26 @@ export interface QuoteResponse {
   appliedRules: string[];
   createdAt: string; // ISO timestamp
 }
+
+/**
+ * Paginated response structure for quotes.
+ */
+export interface PaginatedQuoteResponse {
+  content: QuoteResponse[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+}
+
+/**
+ * Quote History Response DTO.
+ */
+export interface QuoteHistoryResponse {
+  id: number;
+  quoteId: number;
+  previousPrice: number;
+  newPrice: number;
+  changeSummary: string;
+  modifiedAt: string;
+}

@@ -1,0 +1,66 @@
+.product-form-container {
+  max-width: 700px;
+  margin: var(--spacing-xl) auto;
+}
+
+.header h2 {
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-lg);
+  font-size: 1.75rem;
+}
+
+.form {
+  background: white;
+  padding: var(--spacing-xl);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  transition: box-shadow 0.3s ease;
+}
+
+.form:hover {
+  box-shadow: var(--shadow-hover);
+}
+
+.form-section-title {
+  color: var(--primary-color);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: var(--spacing-xl) 0 var(--spacing-lg) 0;
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 2px solid var(--background-color);
+}
+
+.grid-2-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+textarea {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+  resize: vertical;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(31, 56, 100, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--border-color);
+}
+
+.form-actions button {
+  width: 100%;
+}

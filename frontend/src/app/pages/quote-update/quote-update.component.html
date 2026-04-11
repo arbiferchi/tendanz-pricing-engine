@@ -1,0 +1,58 @@
+<div class="quote-form-container">
+  <!-- Header -->
+  <div class="header" style="display: flex; justify-content: space-between; align-items: center;">
+    <h2>Update Quote <span *ngIf="quoteId">#{{ quoteId }}</span></h2>
+    <button class="secondary" routerLink="/quotes">← Back to Quotes</button>
+  </div>
+
+  <!-- Initialization Loading -->
+  <div *ngIf="loadingInit" class="loading-container">
+    <div class="loading"></div>
+    <p>Loading baseline configuration...</p>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="successMessage" class="alert success">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="alert error">{{ errorMessage }}</div>
+
+  <!-- Form -->
+  <form *ngIf="!loadingInit" [formGroup]="form" (ngSubmit)="onSubmit()" class="form">
+
+    <div class="form-group">
+      <label for="clientName">Client Name *</label>
+      <input type="text" id="clientName" formControlName="clientName" [class.invalid]="isFieldInvalid('clientName')" />
+      <div *ngIf="isFieldInvalid('clientName')" class="form-error">{{ getErrorMessage('clientName') }}</div>
+    </div>
+
+    <div class="form-group">
+      <label for="productId">Product Mapping *</label>
+      <select id="productId" formControlName="productId" [class.invalid]="isFieldInvalid('productId')">
+        <option value="">-- Alter Product Mapping --</option>
+        <option *ngFor="let product of products" [value]="product.id">{{ product.name }}</option>
+      </select>
+      <div *ngIf="isFieldInvalid('productId')" class="form-error">{{ getErrorMessage('productId') }}</div>
+    </div>
+
+    <div class="form-group">
+      <label for="zoneCode">Residential Zone *</label>
+      <select id="zoneCode" formControlName="zoneCode" [class.invalid]="isFieldInvalid('zoneCode')">
+        <option value="">-- Change Coverage Zone --</option>
+        <option *ngFor="let zone of zones" [value]="zone.code">{{ zone.name }}</option>
+      </select>
+      <div *ngIf="isFieldInvalid('zoneCode')" class="form-error">{{ getErrorMessage('zoneCode') }}</div>
+    </div>
+
+    <div class="form-group">
+      <label for="clientAge">Client Age *</label>
+      <input type="number" id="clientAge" formControlName="clientAge" [class.invalid]="isFieldInvalid('clientAge')" />
+      <div *ngIf="isFieldInvalid('clientAge')" class="form-error">{{ getErrorMessage('clientAge') }}</div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="primary" [disabled]="loading || loadingInit">
+        <span *ngIf="!loading">Execute Upgrade Configuration</span>
+        <span *ngIf="loading" class="loading spinner-inline"></span>
+      </button>
+    </div>
+  </form>
+</div>

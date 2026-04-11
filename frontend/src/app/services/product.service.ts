@@ -19,9 +19,10 @@ export class ProductService {
   constructor(private http: HttpClient) {}
 
   /**
-   * Retrieves all available products, unpacking pagination mapping.
+   * Retrieves all available products, accounting for pagination.
    *
-   * @returns Observable array of mapping products ready for display.
+   * @param params Filtering and pagination params mappings.
+   * @returns Observable of paginated responses or arrays depending on response.
    */
   getProducts(): Observable<Product[]> {
     return this.http.get<PaginatedProductResponse | Product[]>(`${this.apiUrl}${this.endpoint}`).pipe(

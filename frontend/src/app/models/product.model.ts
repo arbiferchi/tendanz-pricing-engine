@@ -7,6 +7,10 @@ export interface Product {
   name: string;
   description: string;
   baseRate?: number;
+  ageFactorYoung?: number;
+  ageFactorAdult?: number;
+  ageFactorSenior?: number;
+  ageFactorElderly?: number;
   createdAt?: string; // ISO timestamp
 }
 
